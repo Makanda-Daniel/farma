@@ -1,0 +1,12 @@
+        let nv = document.getElementById("nv")
+        
+        function clicar () {
+
+            if(nv.style.display =="none"){
+                nv.style.display="flex"
+                
+            } else {
+                nv.style.display="none"
+            }
+        
+        }

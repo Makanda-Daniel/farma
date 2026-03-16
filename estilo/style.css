@@ -1,0 +1,420 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --fundo:#f4f6f7;
+    --primeira: #2ecc71;
+    --segunda:#2c3e50;
+    --texto:#2d3436;
+    --bt:#27ae60;
+}
+
+body {
+    display: flex;
+    flex-flow: column;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1em;
+    background-color: rgb(221, 226, 230);
+}
+
+header {
+    background: url("../img/farmacia.jpeg");
+    background-position: center;
+    background-size: cover;
+    height: 600px;
+}
+
+header >  div#menufixo {
+    background-color: var(--segunda);
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 4;
+}
+
+header >  div#menufixo >  div#icofarma {
+    background: url("../img/farma.png");
+    background-position: center;
+    background-size: cover;
+    width: 60px;
+    height: 50px;
+}
+
+header >  div#menufixo >  div#menu {
+    float: right;
+    cursor: pointer;
+    margin-top: -32px;
+    
+}
+
+header >  div#menufixo > nav {
+    display: none;
+    flex-flow: column;
+    justify-content: center;
+    align-items:center ;
+    
+}
+
+
+header >  div#menufixo > nav > ul > li {
+    list-style-type: none;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+   
+   
+}
+
+header >  div#menufixo > nav > ul > li > a {
+    text-decoration: none;
+    color: var(--primeira);
+}
+header >  div#menufixo > nav > ul > li > a:hover {
+    text-decoration: underline;
+    color: var(--primeira);
+}
+
+ header > div#caixatech{
+    margin-top: 150px;
+    margin-left: 25px;
+    padding: 10px;
+    border:1px solid #ffff;
+    width: 260px;
+    height: 40px;
+    border-radius: 40px;
+    background-color: #ffff;
+    box-shadow: 1px 1px 1px 1px rgb(226, 225, 225);
+}
+
+ header > div#txth {
+    margin-top: 35px;
+    margin-left: 25px;
+    font-size: 3em;
+    color: var(--fundo);
+ }
+
+  header > div#txth > span {
+   
+    color: #27ae60;
+ }
+
+ header > div#txth > p {
+    margin-top: 20px;
+    margin-bottom: 30px;
+    font-size: 0.4em;
+    color: var(--texto);
+ }
+
+ header > div#caixal {
+    margin-left: 26px;
+ }
+  header > div#caixal >form {
+    background-color:var(--fundo);
+    box-shadow: 1px 1px 4px gray;
+    border-radius: 7px;
+    padding: 10px;
+    width: 335px;
+  }
+ header > div#caixal >form >input, button {
+    width: 300px;
+    height: 60px;
+    padding: 10px;
+    border: none;
+    outline-color: var(--bt);
+    border-bottom: 1px solid var(--bt);
+    margin: 7px;
+    font-size: 1em;
+ }
+ header > div#caixal >form > button {
+    background-color: var(--bt);
+    color: white;
+    cursor: pointer;
+     border-radius: 5px;
+ }
+
+
+
+                      /*fim cabecalho - inicio */
+
+
+
+main {
+    flex: 1;
+    margin-top: 200px;
+    
+
+}
+main >section#sessaoft{
+    margin-bottom: 160px;
+}
+main >section#sessaoft>article {
+    background: url("../img/farmacia.jpeg")no-repeat;
+    background-position: center;
+    background-size: cover;
+    height: 400px;
+}
+
+main >section#sessaoft>article> div {
+    background-color: aliceblue;
+    border-radius: 20px;
+    height: 120px;
+    width: 300px;
+    padding: 20px;
+    margin-left: 20px;
+    margin-top: 200px;
+}
+span.pft {
+   color:var(--texto);
+   text-transform: capitalize;
+   
+ 
+}
+
+                    /* inicio-section container */
+
+
+
+main>section#container {
+
+    margin: 0  auto;
+    width:100% ;
+    background-color: var(--segunda);
+    padding: 20px;
+    
+  
+
+}                   
+main >section#container>div#txtcomof {
+    text-align: center;
+    color: white;
+    padding: 10px;
+   
+}
+
+#subtxt {
+    color:gray;
+}
+
+main >section#container>article {
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    align-items: center;
+     margin-top: 40px;
+    
+     
+    
+     
+}
+
+main >section#container>article>div.itens {
+    padding: 27px;
+    box-shadow: 1px 1px 4px;
+    border-radius: 5px;
+    width:90%;
+    background-color: var(--fundo);
+    margin: 10px;
+}
+main >section#container>article>div.itens> span {
+    margin: 7px;
+}
+main >section#container>article>div.itens>div>h2,p {
+    margin: 7px;
+    color: var(--segunda);
+}
+
+
+
+
+
+
+                  /* inicio-section escolher */
+
+main >section#sessaoEscolhe {
+    height: 400px;
+    background-image: linear-gradient( to right,rgba(46, 204, 112, 0.815),rgba(44, 62, 80, 0.905) );
+    margin-top: 160px;
+    margin-bottom: 160px;
+
+}                  
+main >section#sessaoEscolhe>article {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    z-index: 1;
+}
+main >section#sessaoEscolhe>article> div {
+    text-align: center;
+}
+
+main >section#sessaoEscolhe>article> div >p {
+    font-size: 1.1em;
+    width: 80vw;
+    text-align: center;
+    margin: 0 auto;
+    text-align: center;
+    color: rgb(0, 0, 0);
+}
+h1#titulo {
+    color: var(--primeira);
+}
+
+main >section#sessaoEscolhe>article> div > input {
+    font-size: 1em;
+    padding: 10px;
+    margin-top: 20px;
+    width: 300px;
+    height: 60px;
+    border-radius: 7px;
+    border: 1px solid var(--bt);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+footer {
+    background-color: var(--segunda);
+    color: gray;
+}
+footer > div {
+    font-size: 1.1em;
+    text-align: center;
+  
+}
+footer  > section.Focaixa >  div {
+    font-size: 1.1em;
+    padding: 15px;
+    
+}
+footer  > section.Focaixa >  div > span {
+    margin: 5px;
+}
+footer  > section.Focaixa > article {
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: start;
+    align-items: start;
+    padding: 15px;
+}
+footer  > section.Focaixa > article > div {
+    margin: 7px;
+  
+}
+footer  > section.Focaixa > article > div > h2 {
+    color: var(--fundo);
+  
+}
+footer  > section.Focaixa > article > div > ul > li {
+    
+    list-style-type: none;
+    padding: 4px;
+ 
+}
+
+footer  > section.Focaixa > article > div > ul > li  > a {
+    color: gray;
+}
+footer  > section.Focaixa > article > div > ul > li  > a:hover{
+    color: var(--primeira);
+}
+
+
+@media (min-width:768px){
+    footer  > section.Focaixa > article {
+    flex-flow: row wrap;
+    justify-content: space-around;
+
+}
+header >  div#menufixo {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    align-items: center;
+}
+header >  div#menufixo >  div#menu {
+    display: none;
+
+}
+
+
+header >  div#menufixo > nav {
+    display: block;
+}
+
+header >  div#menufixo > nav > ul > li {
+     display: inline-block;
+}
+
+header >  div#menufixo > nav > ul > li > a {
+    text-decoration: none;
+    color: var(--primeira);
+}
+
+
+
+main >section#container>article {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    
+     margin-top: 40px;
+    
+    
+     
+}
+
+main >section#container>article>div.itens {
+    padding: 27px;
+    box-shadow: 1px 1px 4px;
+    border-radius: 5px;
+    width:30%;
+    background-color: var(--fundo);
+    margin: 10px;
+
+}
+
+}
