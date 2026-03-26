@@ -1,0 +1,131 @@
+const API = 'http://localhost:3000/api'
+
+const map = L.map('map').setView([-8.8383, 13.2344], 13)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: 'OpenStreetMap'
+}).addTo(map)
+
+const marcadores = []
+let farmaciaAtual = null
+
+function limparMarcadores() {
+  marcadores.forEach(m => map.removeLayer(m))
+  marcadores.length = 0
+}
+
+function adicionarMarcador(farmacia) {
+  const m = L.marker([farmacia.latitude, farmacia.longitude])
+    .addTo(map)
+    .bindPopup(`<b>${farmacia.nome}</b><br>${farmacia.endereco || ''}`)
+  marcadores.push(m)
+  return m
+}
+
+async function carregarFarmacias() {
+  const res = await fetch(`${API}/farmacias`)
+  const farmacias = await res.json()
+  limparMarcadores()
+  renderizarCards(farmacias)
+  farmacias.forEach(adicionarMarcador)
+}
+
+async function buscarProximas(lat, lng) {
+  const res = await fetch(`${API}/farmacias/proximas?lat=${lat}&lng=${lng}`)
+  const farmacias = await res.json()
+  limparMarcadores()
+  renderizarCards(farmacias)
+  farmacias.forEach(adicionarMarcador)
+  if (farmacias.length) map.setView([lat, lng], 14)
+}
+
+async function buscarPorMedicamento(nome) {
+  const res = await fetch(`${API}/medicamentos/buscar/${encodeURIComponent(nome)}`)
+  const resultados = await res.json()
+  const farmacias = resultados
+    .filter(r => r.farmacias)
+    .map(r => r.farmacias)
+    .filter((f, i, arr) => arr.findIndex(x => x.id === f.id) === i) // remove duplicadas
+  limparMarcadores()
+  renderizarCards(farmacias)
+  farmacias.forEach(adicionarMarcador)
+}
+
+function renderizarCards(farmacias) {
+  const article = document.getElementById('lista-farmacias')
+  article.innerHTML = ''
+
+  if (!farmacias.length) {
+    article.innerHTML = '<p style="color:#2c3e50;text-align:center;padding:20px">Nenhuma farmácia encontrada.</p>'
+    return
+  }
+
+  farmacias.forEach((f, i) => {
+    const div = document.createElement('div')
+    div.className = 'farma'
+    div.setAttribute('data-aos', 'fade-up')
+    div.innerHTML = `
+      <p class="ft" style="background-image:url('img/${(i % 3) + 1}.jpeg');background-position:center;background-size:cover"></p>
+      <p class="txt" style="padding:10px">
+        <span>${f.nome}</span><br>
+        <small>${f.endereco || ''}</small><br>
+        <input type="button" value="Ver Mais" onclick="verMais(${f.id})">
+      </p>`
+    article.appendChild(div)
+  })
+
+  AOS.refresh()
+}
+
+function verMais(id) {
+  fetch(`${API}/farmacias/${id}`)
+    .then(r => r.json())
+    .then(f => {
+      farmaciaAtual = f
+      document.getElementById('modal-nome').textContent = f.nome
+      document.getElementById('modal-endereco').textContent = f.endereco ? 'Endereço: ' + f.endereco : ''
+      document.getElementById('modal-telefone').textContent = f.telefone ? 'Telefone: ' + f.telefone : ''
+      document.getElementById('modal-coords').textContent = `Lat: ${f.latitude} | Lng: ${f.longitude}`
+      document.getElementById('modal-farmacia').classList.add('aberto')
+
+      // carrega medicamentos da farmácia no modal
+      fetch(`${API}/medicamentos/farmacia/${id}`)
+        .then(r => r.json())
+        .then(meds => {
+          const lista = document.getElementById('modal-medicamentos')
+          if (!meds.length) { lista.innerHTML = '<li>Nenhum medicamento cadastrado</li>'; return }
+          lista.innerHTML = meds.map(m => `<li><b>${m.nome}</b> — ${m.quantidade} un. ${m.descricao ? '· ' + m.descricao : ''}</li>`).join('')
+        })
+    })
+}
+
+function fecharModal() {
+  document.getElementById('modal-farmacia').classList.remove('aberto')
+}
+
+function irParaMapa() {
+  if (!farmaciaAtual) return
+  fecharModal()
+  map.setView([farmaciaAtual.latitude, farmaciaAtual.longitude], 16)
+  const marcador = marcadores.find(m => {
+    const ll = m.getLatLng()
+    return ll.lat === farmaciaAtual.latitude && ll.lng === farmaciaAtual.longitude
+  })
+  if (marcador) marcador.openPopup()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+document.getElementById('ver').addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(
+    pos => buscarProximas(pos.coords.latitude, pos.coords.longitude),
+    () => alert('Não foi possível obter sua localização.')
+  )
+})
+
+const params = new URLSearchParams(window.location.search)
+const medicamento = params.get('medicamento')
+
+if (medicamento) {
+  buscarPorMedicamento(medicamento)
+} else {
+  carregarFarmacias()
+}

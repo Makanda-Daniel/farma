@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteRule ^$ /farma/frontend/ [R=301,L]
+RewriteRule ^index\.html$ /farma/frontend/ [R=301,L]

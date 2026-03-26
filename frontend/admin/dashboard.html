@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmaOn — Dashboard</title>
+  <script src="https://kit.fontawesome.com/54fc0ed631.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --primeira: #2ecc71; --segunda: #2c3e50; --bt: #27ae60; --fundo: #f4f6f7; }
+    body { font-family: Arial, Helvetica, sans-serif; background: var(--fundo); display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    #sidebar { width: 220px; min-height: 100vh; background: var(--segunda); padding: 20px 0; position: fixed; top: 0; left: 0; z-index: 100; }
+    #sidebar .logo { color: var(--primeira); font-size: 1.2em; font-weight: bold; padding: 0 20px 20px; border-bottom: 1px solid #3d5166; display: flex; align-items: center; gap: 8px; }
+    #sidebar nav { margin-top: 12px; }
+    #sidebar nav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 20px; background: none; border: none; color: #aaa; font-size: 0.9em; cursor: pointer; text-align: left; transition: all .2s; }
+    #sidebar nav button:hover { color: white; background: rgba(255,255,255,0.06); }
+    #sidebar nav button.ativo { color: white; background: rgba(255,255,255,0.08); border-left: 3px solid var(--primeira); }
+    #sidebar .sair { position: absolute; bottom: 20px; width: 100%; padding: 13px 20px; background: none; border: none; color: #e74c3c; cursor: pointer; text-align: left; font-size: 0.9em; display: flex; align-items: center; gap: 10px; }
+
+    /* ── Conteúdo ── */
+    #conteudo { margin-left: 220px; padding: 28px; width: 100%; }
+    #conteudo > h2 { color: var(--segunda); margin-bottom: 22px; font-size: 1.3em; }
+    .secao { display: none; }
+    .secao.ativa { display: block; }
+
+    /* ── Mensagem ── */
+    #msg { padding: 10px 16px; border-radius: 6px; margin-bottom: 18px; font-size: 0.9em; display: none; }
+    #msg.ok { background: #d5f5e3; color: #1e8449; display: block; }
+    #msg.erro { background: #fadbd8; color: #c0392b; display: block; }
+
+    /* ── Cards resumo ── */
+    .resumo { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+    .resumo .card { background: white; border-radius: 8px; padding: 18px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); flex: 1; min-width: 130px; display: flex; align-items: center; gap: 16px; }
+    .resumo .card .icone { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; }
+    .resumo .card .icone.verde { background: #d5f5e3; color: #27ae60; }
+    .resumo .card .icone.azul { background: #d6eaf8; color: #2980b9; }
+    .resumo .card .icone.laranja { background: #fdebd0; color: #e67e22; }
+    .resumo .card .info span { font-size: 1.8em; font-weight: bold; color: var(--segunda); display: block; }
+    .resumo .card .info p { color: gray; font-size: 0.82em; }
+
+    /* ── Mapa visão geral ── */
+    #mapa-geral { width: 100%; height: 380px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 24px; }
+
+    /* ── Recentes ── */
+    .recentes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .recentes .box { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .recentes .box h3 { color: var(--segunda); font-size: 0.95em; margin-bottom: 14px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    .recentes .box ul { list-style: none; }
+    .recentes .box ul li { padding: 7px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.88em; color: #444; display: flex; justify-content: space-between; }
+    .recentes .box ul li span { color: #27ae60; font-weight: bold; }
+
+    /* ── Form box ── */
+    .form-box { background: white; border-radius: 8px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 24px; }
+    .form-box h3 { color: var(--segunda); margin-bottom: 14px; font-size: 0.95em; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-grid input, .form-grid select, .form-grid textarea { padding: 9px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9em; outline-color: var(--bt); font-family: inherit; }
+    .form-grid input.span2, .form-grid select.span2, .form-grid textarea.span2 { grid-column: span 2; }
+    .form-box button[type=submit] { margin-top: 12px; padding: 9px 22px; background: var(--bt); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+    .form-box button[type=submit]:hover { background: var(--segunda); }
+
+    /* ── Mapa picker ── */
+    #map-picker { width: 100%; height: 280px; border-radius: 6px; margin-top: 10px; }
+
+    /* ── Tabela box ── */
+    .tabela-box { background: white; border-radius: 8px; padding: 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .tabela-box .topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+    .tabela-box h3 { color: var(--segunda); font-size: 0.95em; }
+    .tabela-box .busca { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.88em; outline-color: var(--bt); width: 220px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+    th { background: var(--segunda); color: white; padding: 10px 12px; text-align: left; font-weight: 500; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; color: #333; vertical-align: middle; }
+    tr:hover td { background: #fafafa; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
+    .badge.verde { background: #d5f5e3; color: #1e8449; }
+    .badge.vermelho { background: #fadbd8; color: #c0392b; }
+    .btn-acao { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.82em; margin-right: 3px; }
+    .btn-ver { background: #8e44ad; color: white; }
+    .btn-editar { background: #2980b9; color: white; }
+    .btn-remover { background: #e74c3c; color: white; }
+    .loading { text-align: center; color: gray; padding: 20px; font-size: 0.9em; }
+
+    /* ── Filtro medicamentos ── */
+    .filtros { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+    .filtros select, .filtros input { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.88em; outline-color: var(--bt); }
+
+    /* ── Modais ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; justify-content: center; align-items: center; }
+    .modal-overlay.aberto { display: flex; }
+    .modal-box { background: white; border-radius: 10px; padding: 28px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-box h3 { color: var(--segunda); margin-bottom: 16px; font-size: 1.05em; }
+    .modal-box .fechar { position: absolute; top: 14px; right: 18px; background: none; border: none; font-size: 1.3em; cursor: pointer; color: #888; }
+    .modal-acoes { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+    .modal-acoes button { padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+    .btn-salvar { background: var(--bt); color: white; }
+    .btn-cancelar { background: #eee; color: #333; }
+
+    /* Modal detalhes farmácia */
+    .detalhe-info { margin-bottom: 16px; }
+    .detalhe-info p { font-size: 0.9em; color: #555; margin-bottom: 6px; }
+    .detalhe-info p strong { color: var(--segunda); }
+    .detalhe-meds { margin-top: 14px; }
+    .detalhe-meds h4 { color: var(--segunda); font-size: 0.9em; margin-bottom: 10px; }
+    .detalhe-meds table { font-size: 0.85em; }
+    #mapa-detalhe { width: 100%; height: 200px; border-radius: 6px; margin-bottom: 14px; }
+
+    @media (max-width: 900px) {
+      .recentes { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid input.span2, .form-grid select.span2 { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="logo"><i class="fa-solid fa-capsules"></i> FarmaOn</div>
+  <nav>
+    <button class="ativo" onclick="trocarSecao('visao-geral', this)"><i class="fa-solid fa-chart-pie"></i> Visão Geral</button>
+    <button onclick="trocarSecao('farmacias', this)"><i class="fa-solid fa-house-medical"></i> Farmácias</button>
+    <button onclick="trocarSecao('medicamentos', this)"><i class="fa-solid fa-pills"></i> Medicamentos</button>
+  </nav>
+  <button class="sair" onclick="sair()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+</div>
+
+<div id="conteudo">
+  <div id="msg"></div>
+
+  <!-- ── Visão Geral ── -->
+  <div id="visao-geral" class="secao ativa">
+    <h2>Visão Geral</h2>
+    <div class="resumo">
+      <div class="card">
+        <div class="icone verde"><i class="fa-solid fa-house-medical"></i></div>
+        <div class="info"><span id="total-farmacias">—</span><p>Farmácias cadastradas</p></div>
+      </div>
+      <div class="card">
+        <div class="icone azul"><i class="fa-solid fa-pills"></i></div>
+        <div class="info"><span id="total-medicamentos">—</span><p>Medicamentos cadastrados</p></div>
+      </div>
+      <div class="card">
+        <div class="icone laranja"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="info"><span id="total-estoque">—</span><p>Unidades em estoque</p></div>
+      </div>
+    </div>
+    <div id="mapa-geral"></div>
+    <div class="recentes">
+      <div class="box">
+        <h3><i class="fa-solid fa-house-medical" style="color:#27ae60"></i> Farmácias recentes</h3>
+        <ul id="lista-recentes-farmacias"><li class="loading">Carregando...</li></ul>
+      </div>
+      <div class="box">
+        <h3><i class="fa-solid fa-pills" style="color:#2980b9"></i> Medicamentos recentes</h3>
+        <ul id="lista-recentes-meds"><li class="loading">Carregando...</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Farmácias ── -->
+  <div id="farmacias" class="secao">
+    <h2>Farmácias</h2>
+    <div class="form-box">
+      <h3>Cadastrar nova farmácia</h3>
+      <form id="form-farmacia">
+        <div class="form-grid">
+          <input type="text" id="f-nome" placeholder="Nome da farmácia" required>
+          <input type="text" id="f-telefone" placeholder="Telefone">
+          <input type="text" id="f-endereco" placeholder="Endereço completo" class="span2">
+          <input type="number" id="f-lat" placeholder="Latitude" step="any" required>
+          <input type="number" id="f-lng" placeholder="Longitude" step="any" required>
+        </div>
+        <p style="font-size:0.8em;color:gray;margin-top:8px"><i class="fa-solid fa-circle-info"></i> Clique no mapa para preencher lat/lng automaticamente</p>
+        <div id="map-picker"></div>
+        <button type="submit"><i class="fa-solid fa-plus"></i> CADASTRAR FARMÁCIA</button>
+      </form>
+    </div>
+    <div class="tabela-box">
+      <div class="topo">
+        <h3>Farmácias cadastradas</h3>
+        <input class="busca" type="text" id="busca-farmacias" placeholder="Pesquisar farmácia..." oninput="filtrarTabela('tabela-farmacias', this.value)">
+      </div>
+      <table>
+        <thead><tr><th>Nome</th><th>Endereço</th><th>Telefone</th><th>Coordenadas</th><th>Medicamentos</th><th>Ações</th></tr></thead>
+        <tbody id="tabela-farmacias"><tr><td colspan="6" class="loading">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Medicamentos ── -->
+  <div id="medicamentos" class="secao">
+    <h2>Medicamentos</h2>
+    <div class="form-box">
+      <h3>Cadastrar medicamento</h3>
+      <form id="form-medicamento">
+        <div class="form-grid">
+          <select id="m-farmacia" required class="span2"><option value="">Selecione a farmácia</option></select>
+          <input type="text" id="m-nome" placeholder="Nome do medicamento" required>
+          <input type="number" id="m-quantidade" placeholder="Quantidade em estoque" min="0">
+          <textarea id="m-descricao" placeholder="Descrição (opcional)" class="span2" rows="2"></textarea>
+        </div>
+        <button type="submit"><i class="fa-solid fa-plus"></i> CADASTRAR MEDICAMENTO</button>
+      </form>
+    </div>
+    <div class="tabela-box">
+      <div class="topo">
+        <h3>Medicamentos cadastrados</h3>
+      </div>
+      <div class="filtros">
+        <select id="filtro-farmacia-med" onchange="carregarMedicamentos()"><option value="">Todas as farmácias</option></select>
+        <input type="text" id="busca-meds" placeholder="Pesquisar medicamento..." oninput="filtrarTabela('tabela-medicamentos', this.value)">
+      </div>
+      <table>
+        <thead><tr><th>Farmácia</th><th>Medicamento</th><th>Descrição</th><th>Estoque</th><th>Ações</th></tr></thead>
+        <tbody id="tabela-medicamentos"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal editar farmácia -->
+<div id="modal-farmacia" class="modal-overlay">
+  <div class="modal-box">
+    <button class="fechar" onclick="fecharModal('modal-farmacia')">×</button>
+    <h3><i class="fa-solid fa-pen"></i> Editar Farmácia</h3>
+    <input type="hidden" id="edit-id">
+    <div class="form-grid">
+      <input type="text" id="edit-nome" placeholder="Nome" required>
+      <input type="text" id="edit-telefone" placeholder="Telefone">
+      <input type="text" id="edit-endereco" placeholder="Endereço" class="span2">
+      <input type="number" id="edit-lat" placeholder="Latitude" step="any">
+      <input type="number" id="edit-lng" placeholder="Longitude" step="any">
+    </div>
+    <div class="modal-acoes">
+      <button class="btn-cancelar" onclick="fecharModal('modal-farmacia')">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarEdicaoFarmacia()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalhes farmácia -->
+<div id="modal-detalhe" class="modal-overlay">
+  <div class="modal-box">
+    <button class="fechar" onclick="fecharModal('modal-detalhe')">×</button>
+    <h3 id="detalhe-nome"></h3>
+    <div id="mapa-detalhe"></div>
+    <div class="detalhe-info">
+      <p><strong>Endereço:</strong> <span id="detalhe-endereco"></span></p>
+      <p><strong>Telefone:</strong> <span id="detalhe-telefone"></span></p>
+      <p><strong>Coordenadas:</strong> <span id="detalhe-coords"></span></p>
+    </div>
+    <div class="detalhe-meds">
+      <h4><i class="fa-solid fa-pills" style="color:#27ae60"></i> Medicamentos desta farmácia</h4>
+      <table>
+        <thead><tr><th>Nome</th><th>Descrição</th><th>Estoque</th></tr></thead>
+        <tbody id="detalhe-tabela-meds"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal editar medicamento -->
+<div id="modal-med" class="modal-overlay">
+  <div class="modal-box">
+    <button class="fechar" onclick="fecharModal('modal-med')">×</button>
+    <h3><i class="fa-solid fa-pen"></i> Editar Medicamento</h3>
+    <input type="hidden" id="edit-med-id">
+    <div class="form-grid">
+      <input type="text" id="edit-med-nome" placeholder="Nome" class="span2" required>
+      <input type="number" id="edit-med-quantidade" placeholder="Quantidade" min="0">
+      <textarea id="edit-med-descricao" placeholder="Descrição" class="span2" rows="2"></textarea>
+    </div>
+    <div class="modal-acoes">
+      <button class="btn-cancelar" onclick="fecharModal('modal-med')">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarEdicaoMed()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

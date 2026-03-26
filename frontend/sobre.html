@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo/style.css">
+    <script src="https://kit.fontawesome.com/54fc0ed631.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+    <title>FarmaOn</title>
+    <style>
+    header.sobre {
+        background:none;
+        margin-top: -500px;
+    }
+
+    main {
+        margin: 0 auto;
+        width: 90vw;
+        
+    }
+    main>section.ceo {
+        margin-bottom: 55px;
+        
+    }
+
+
+    main>section>article{
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    main>section>article>div#ft {
+        border: 1px solid;
+        text-align: center;
+        height: 200px;
+        width: 50%;
+        border-radius: 50%;
+        border: none;
+        margin: 10px;
+        background: url("img/eu2.png")no-repeat;
+        background-position: top left;
+        background-size: cover;
+    }
+
+    main>section.ceo>article>div#txt>h4 {
+        margin-bottom: 7px;
+
+    }
+
+    main>section.servico {
+        
+        padding: 10px;
+        margin-bottom: 100px;
+    }
+
+     main>section.servico >h2 {
+        text-align: center;
+        color:var(--segunda);
+        margin-bottom: 30px;
+     }
+     main>section.servico>article{
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: center;
+        align-items: center;
+     }
+
+      main>section.servico>article>div {
+        background-color: white;
+        margin-bottom: 50px;
+        border-radius: 7px;
+        text-align: center;
+        width: 90%;
+        padding: 17px;
+        box-shadow: 2px 2px 4px gray;
+      }
+       main>section.servico>article>div>h4 {
+        padding: 10px;
+        text-align: center;
+        margin: 10px;
+        
+       }
+
+       main>section#equipes {
+        margin-bottom: 160px;
+       }
+
+    main>section.servico>article>div.ft1 {
+        height: 200px;
+        background: url("img/eu2.png")no-repeat;
+        background-position: left top;
+        background-size: cover;
+    }
+
+
+        main>section.servico>article>div.ft2 {
+        height: 200px;
+        background: url("img/pedro.png")no-repeat;
+        background-position: left top ;
+        background-size: cover;
+    }
+
+        main>section.servico>article>div.ft3 {
+        height: 200px;
+        background: url("img/eliseu.png")no-repeat;
+        background-position: left top;
+        background-size: cover;
+    }
+
+
+     main>section#ft {
+        margin: 10px;
+        margin-bottom: 140px;
+       
+     }
+     main>section#ft>article>div {
+        height: 400px;
+        width: 100%;
+        background: url("img/4.jpg")no-repeat;
+        background-position: center;
+        background-size: cover;
+     }
+
+     main>section#ft>article>div>p {
+        color: var(--segunda);
+        margin-top: 100px;
+        padding: 10px;
+        width: 70%;
+        font-size: 1.5em;
+
+     }
+
+    @media(min-width:768px){
+
+             main>section.servico>article{
+     
+        flex-flow: row wrap;
+        justify-content: space-evenly;
+   
+     }
+
+        main>section.servico>article>div {
+            width: 300px;
+     
+
+   
+     }
+         main>section.ceo>article{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-evenly;
+        align-items: center;
+
+    }
+
+    main>section.ceo>article>div#ft {
+        height: 250px;
+        width: 45%;
+    
+    }
+
+    main>section>article>div#txt {
+        width: 50%;
+
+    }
+
+
+     main>section#ft>article>div>p {
+        margin-top: 150px;
+        width: 70%;
+        font-size: 2em;
+       
+
+     }
+    }
+    @media(min-width:1024px) {
+        main>section.ceo>article>div#ft {
+        height: 250px;
+        width: 25%;
+    
+    }
+
+         main>section#ft>article>div>p {
+        margin-top: 150px;
+        width: 60%;
+        font-size: 2em;
+
+     }
+
+    }
+</style>
+</head>
+<body>
+    <header class="sobre">
+        <div id="menufixo">
+            <div id="icofarma"></div>
+            <div  onclick="clicar()" id="menu"><i class="fa-solid fa-bars fa-xl" style="color: #2ecc71;"></i></div>
+            <nav id="nv">
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="localizar.html">Localizar</a></li>
+                    <li><a href="sobre.html">Sobre nós</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="ceo">
+            <article>
+                <div id="ft"></div>
+                <div id="txt">
+                    <h4>Makanda Daniel</h4>
+                    A FarmaOn é um sistema web desenvolvido para facilitar o acesso a cuidados médicos. Foi feito pensando em como irá beneficiar a todos, diminuindo o gasto de tempo a procura de farmácias, e otimizando a busca e a disponibiliade de produto que necessitas.
+
+                </div>
+            </article>
+        </section> 
+
+        <section class="servico">
+            <h2>Nossos Serviços</h2>
+            <article>
+                <div data-aos="fade-up"> 
+                    <span><i class="fa-solid fa-location-dot fa-2xl" style="color: #1f3252;"></i></span>
+                    <h4>Localizar as farmácias</h4>
+                    <p>
+                        Encontre farmáciasperto de sí com mapa interativo, localização automática e lista de opcões abertas para conseguir medicamentos com rapidez.
+
+                    </p>
+                </div>
+
+                <div data-aos="fade-up">
+                    <span><i class="fa-solid fa-check fa-2xl" style="color: #1f3252;"></i></span>
+                    <h4>Verificar o Comprimidio</h4>
+                    <p>
+                        Verifique o comprimidio de forma simples pesquisando pelo nome ou código do medicamento e receba informações úteis para evitar erros e usar com segurança.
+
+                    </p>
+                </div>
+
+                <div data-aos="fade-up">
+                    <span><i class="fa-solid fa-map-location fa-2xl" style="color: #1f3252;"></i></span>
+                    <h4>Mapear as Rotas</h4>
+                    <p>
+                       Mapeie rotas até farmácias próximas e veja o melhor caminho no mapa, com direções simples que ajudam a chegar rápido ao local que precisa hoje perto já.
+                    </p>
+                </div>
+            </article>
+        </section>
+         
+
+         <section id="ft">
+            <article>
+                <div>
+                    <p>
+                        Esteja perto da  daqueles que querem cuidar da sua saúde
+
+                    </p>
+                </div>
+            </article>
+         </section>
+
+           <section id="equipes" class="servico">
+            <h2>Nossa Equipe</h2>
+            <article class="equipe">
+                <div class="ft1" data-aos="fade-up">
+
+                </div>
+
+                <div class="ft2" data-aos="fade-up">
+
+                </div>
+
+                <div class="ft3" data-aos="fade-up">
+
+                </div>
+            </article>
+        </section>
+
+
+
+
+    </main>
+    <footer>
+        <section class="Focaixa">
+            <div id="Foicon">
+                <span><i class="fa-brands fa-facebook fa-xl" style="color: #2ecc71"></i></span>
+                <span><i class="fa-brands fa-instagram fa-xl" style="color: #2ecc71;"></i></span>
+                <span><i class="fa-brands fa-linkedin fa-xl" style="color: #2ecc71;"></i></span>
+                <span><i class="fa-brands fa-whatsapp fa-xl" style="color: #2ecc71;"></i></span>
+            </div>
+            <article>
+                <div>
+                    <h2>Links Rápidos</h2>
+                    <ul>
+                        <li><a href="index.html">inicio</a></li>
+                        <li><a href="localizar.html">localizar</a></li>
+                        <li><a href="sobre.html">Sobre nós</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h2>Contactos</h2>
+                    <ul>
+                        <li>makandadaniel63@gmail.com</li>
+                        <li>925 132 789</li>
+                        <li>Luanda - Angola</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+        <div>Desenvolvido Pelo - Makanda Daniel</div>
+    </footer>
+    <script src="js/javaS"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>
+          AOS.init();
+    </script>
+</body>
+</html>

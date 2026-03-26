@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo/style.css">
+    <script src="https://kit.fontawesome.com/54fc0ed631.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <title>FarmaOn</title>
+    <style>
+        header { background:none; margin-top: -600px; }
+        div#titulo { margin: 0 auto; width: 90vw; }
+        div#titulo > span, h1 { margin-left: 4px; color: var(--texto); }
+        button#ver {
+            border: 1px solid;
+            width: 200px;
+            text-transform: capitalize;
+            cursor: pointer;
+            background-color: var(--bt);
+            color: white;
+            border-radius: 4px;
+            margin-left: -1px;
+        }
+        button#ver:hover { background-color: white; color: var(--bt); border-color: white; }
+        div#map { width: 100%; height: 500px; z-index: 1; margin-bottom: 50px; }
+        section#farmacia { margin: 0 auto; width: 90vw; }
+        section#farmacia > h2 { text-align: center; color: var(--segunda); text-transform: capitalize; margin: 20px; }
+        section#farmacia > article { display: flex; flex-flow: column wrap; justify-content: center; align-items: center; }
+        section#farmacia > article > div.farma { background-color: var(--segunda); width: 90%; border-radius: 3px; margin: 10px; }
+        section#farmacia > article > div.farma > p.ft { background-position: center; background-size: cover; height: 200px; }
+        section#farmacia > article > div.farma > p.txt { color: white; font-size: 1.1em; padding: 10px; }
+        section#farmacia > article > div.farma > p.txt > input {
+            width: 100%; height: 50px; cursor: pointer;
+            background-color: var(--bt); border: 1px solid var(--bt);
+            color: white; font-size: 1.1em;
+        }
+
+        /* Modal */
+        #modal-farmacia {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 999;
+            justify-content: center; align-items: center;
+        }
+        #modal-farmacia.aberto { display: flex; }
+        #modal-farmacia .modal-box {
+            background: white; border-radius: 10px; padding: 30px;
+            width: 420px; max-width: 92vw; position: relative;
+            max-height: 85vh; overflow-y: auto;
+        }
+        #modal-farmacia .modal-box h3 { color: #2c3e50; margin-bottom: 12px; }
+        #modal-farmacia .modal-box p { color: #555; margin-bottom: 6px; font-size: 0.95em; }
+        #modal-farmacia .modal-box .coords { color: #aaa; font-size: 0.82em; margin-bottom: 14px; }
+        #modal-farmacia .fechar {
+            position: absolute; top: 12px; right: 16px;
+            background: none; border: none; font-size: 1.4em; cursor: pointer; color: #333;
+        }
+        #modal-farmacia .btn-mapa {
+            width: 100%; padding: 10px; background: #27ae60;
+            color: white; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 1em; margin-top: 10px;
+        }
+        #modal-farmacia h4 { color: #2c3e50; margin: 14px 0 8px; font-size: 0.95em; }
+        #modal-medicamentos { padding-left: 18px; color: #444; font-size: 0.9em; }
+        #modal-medicamentos li { margin-bottom: 4px; }
+
+        @media (min-width:768px) {
+            section#farmacia > article { flex-flow: row wrap; justify-content: space-between; }
+            section#farmacia > article > div.farma { width: 30%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="localizar">
+        <div id="menufixo">
+            <div id="icofarma"></div>
+            <div onclick="clicar()" id="menu"><i class="fa-solid fa-bars fa-xl" style="color: #2ecc71;"></i></div>
+            <nav id="nv">
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="localizar.html">Localizar</a></li>
+                    <li><a href="sobre.html">Sobre nós</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <div id="titulo">
+                <span><i class="fa-solid fa-location-dot fa-2xl" style="color: #2ecc71;"></i></span>
+                <h1 id="lo">Localizar</h1>
+                <p>Não perca tempo e localize a farmácia mais próxima de sí, podendo visualizar os medicamentos e preços que nela se encontra. Localiza já.</p>
+                <p><button id="ver">minha localização</button></p>
+            </div>
+            <div id="map"></div>
+        </section>
+
+        <section id="farmacia">
+            <h2>nossas farmácias</h2>
+            <article id="lista-farmacias"></article>
+        </section>
+    </main>
+
+    <!-- Modal detalhes farmácia -->
+    <div id="modal-farmacia">
+        <div class="modal-box">
+            <button class="fechar" onclick="fecharModal()">×</button>
+            <h3 id="modal-nome"></h3>
+            <p id="modal-endereco"></p>
+            <p id="modal-telefone"></p>
+            <p id="modal-coords" class="coords"></p>
+            <h4><i class="fa-solid fa-pills" style="color:#27ae60"></i> Medicamentos disponíveis</h4>
+            <ul id="modal-medicamentos"></ul>
+            <button class="btn-mapa" onclick="irParaMapa()">Ver no Mapa</button>
+        </div>
+    </div>
+
+    <br><br>
+
+    <footer>
+        <section class="Focaixa">
+            <div id="Foicon">
+                <span><i class="fa-brands fa-facebook fa-xl" style="color: #2ecc71"></i></span>
+                <span><i class="fa-brands fa-instagram fa-xl" style="color: #2ecc71;"></i></span>
+                <span><i class="fa-brands fa-linkedin fa-xl" style="color: #2ecc71;"></i></span>
+                <span><i class="fa-brands fa-whatsapp fa-xl" style="color: #2ecc71;"></i></span>
+            </div>
+            <article>
+                <div>
+                    <h2>Links Rápidos</h2>
+                    <ul>
+                        <li><a href="index.html">inicio</a></li>
+                        <li><a href="localizar.html">localizar</a></li>
+                        <li><a href="sobre.html">Sobre nós</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h2>Contactos</h2>
+                    <ul>
+                        <li>makandadaniel63@gmail.com</li>
+                        <li>925 132 789</li>
+                        <li>Luanda - Angola</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+        <div>Desenvolvido Pelo - Makanda Daniel</div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="js/javaS"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>AOS.init();</script>
+    <script src="js/localizar.js"></script>
+</body>
+</html>
