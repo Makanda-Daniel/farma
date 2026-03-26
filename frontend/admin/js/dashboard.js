@@ -1,4 +1,3 @@
-const API = 'http://localhost:3000/api'
 const token = localStorage.getItem('admin_token')
 if (!token) window.location.href = 'index.html'
 

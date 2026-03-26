@@ -1,4 +1,3 @@
-const API = 'http://localhost:3000/api'
 
 const form = document.querySelector('#caixal form')
 const inputBusca = document.querySelector('#caixal input')

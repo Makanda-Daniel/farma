@@ -1,4 +1,3 @@
-const API = 'http://localhost:3000/api'
 
 const map = L.map('map').setView([-8.8383, 13.2344], 13)
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

@@ -310,8 +310,17 @@
                 </div>
             </article>
         </section>
-        <div>Desenvolvido Pelo - Makanda Daniel</div>
+        <div>Desenvolvido Pelo - <span id="admin-trigger" onclick="irAdmin()" style="cursor:default;user-select:none">Makanda Daniel</span></div>
     </footer>
+    <script>
+        let cliques = 0, timer
+        function irAdmin() {
+            cliques++
+            clearTimeout(timer)
+            timer = setTimeout(() => cliques = 0, 1500)
+            if (cliques >= 5) { cliques = 0; window.location.href = 'admin/index.html' }
+        }
+    </script>
     <script src="js/javaS"></script>
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script>

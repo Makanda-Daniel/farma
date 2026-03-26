@@ -1,4 +1,3 @@
-const API = 'http://localhost:3000/api'
 
 async function entrar() {
   const senha = document.getElementById('senha').value
