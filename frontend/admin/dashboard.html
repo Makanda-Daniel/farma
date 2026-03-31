@@ -170,6 +170,10 @@
           <input type="text" id="f-endereco" placeholder="Endereço completo" class="span2">
           <input type="number" id="f-lat" placeholder="Latitude" step="any" required>
           <input type="number" id="f-lng" placeholder="Longitude" step="any" required>
+          <div class="span2">
+            <label style="font-size:0.82em;color:gray;display:block;margin-bottom:4px"><i class="fa-solid fa-images"></i> Fotos da farmácia (opcional)</label>
+            <input type="file" id="f-fotos" accept="image/*" multiple style="width:100%;padding:6px;border:1px dashed #ddd;border-radius:6px;font-size:0.85em">
+          </div>
         </div>
         <p style="font-size:0.8em;color:gray;margin-top:8px"><i class="fa-solid fa-circle-info"></i> Clique no mapa para preencher lat/lng automaticamente</p>
         <div id="map-picker"></div>
@@ -231,6 +235,12 @@
       <input type="text" id="edit-endereco" placeholder="Endereço" class="span2">
       <input type="number" id="edit-lat" placeholder="Latitude" step="any">
       <input type="number" id="edit-lng" placeholder="Longitude" step="any">
+      <div class="span2">
+        <label style="font-size:0.82em;color:gray;display:block;margin-bottom:6px"><i class="fa-solid fa-images"></i> Fotos actuais</label>
+        <div id="edit-fotos-grid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+        <label style="font-size:0.82em;color:gray;display:block;margin-bottom:4px">Adicionar novas fotos</label>
+        <input type="file" id="edit-fotos-input" accept="image/*" multiple style="width:100%;padding:6px;border:1px dashed #ddd;border-radius:6px;font-size:0.85em">
+      </div>
     </div>
     <div class="modal-acoes">
       <button class="btn-cancelar" onclick="fecharModal('modal-farmacia')">Cancelar</button>

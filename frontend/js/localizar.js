@@ -6,13 +6,39 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const marcadores = []
 let farmaciaAtual = null
+const carousels = {}
 
 function limparMarcadores() {
   marcadores.forEach(m => map.removeLayer(m))
   marcadores.length = 0
+  Object.values(carousels).forEach(c => clearInterval(c))
+  Object.keys(carousels).forEach(k => delete carousels[k])
 }
 
-function adicionarMarcador(farmacia) {
+function criarCarousel(fotos, index) {
+  if (!fotos || !fotos.length) {
+    return `<p class="ft" style="background-image:url('img/${(index % 3) + 1}.jpeg');background-position:center;background-size:cover"></p>`
+  }
+  const id = `carousel-${Date.now()}-${index}`
+  const imgs = fotos.map((url, i) =>
+    `<img src="${url}" data-idx="${i}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${i === 0 ? 1 : 0};transition:opacity 0.8s ease">`
+  ).join('')
+  setTimeout(() => iniciarCarousel(id, fotos.length), 100)
+  return `<div id="${id}" style="position:relative;height:200px;overflow:hidden">${imgs}</div>`
+}
+
+function iniciarCarousel(id, total) {
+  if (total <= 1) return
+  let atual = 0
+  carousels[id] = setInterval(() => {
+    const el = document.getElementById(id)
+    if (!el) { clearInterval(carousels[id]); return }
+    const imgs = el.querySelectorAll('img')
+    imgs[atual].style.opacity = 0
+    atual = (atual + 1) % total
+    imgs[atual].style.opacity = 1
+  }, 3000)
+}
   const m = L.marker([farmacia.latitude, farmacia.longitude])
     .addTo(map)
     .bindPopup(`<b>${farmacia.nome}</b><br>${farmacia.endereco || ''}`)
@@ -63,7 +89,7 @@ function renderizarCards(farmacias) {
     div.className = 'farma'
     div.setAttribute('data-aos', 'fade-up')
     div.innerHTML = `
-      <p class="ft" style="background-image:url('img/${(i % 3) + 1}.jpeg');background-position:center;background-size:cover"></p>
+      ${criarCarousel(f.fotos, i)}
       <p class="txt" style="padding:10px">
         <span>${f.nome}</span><br>
         <small>${f.endereco || ''}</small><br>

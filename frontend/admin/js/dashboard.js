@@ -153,6 +153,12 @@ document.getElementById('form-farmacia').addEventListener('submit', async (e) =>
   }
   const res = await fetch(`${API}/farmacias`, { method: 'POST', headers, body: JSON.stringify(body) })
   if (!res.ok) return mostrarMsg('Erro ao cadastrar farmácia.', 'erro')
+  const farmacia = await res.json()
+
+  // upload de fotos se houver
+  const inputFotos = document.getElementById('f-fotos')
+  if (inputFotos.files.length) await enviarFotos(farmacia.id, inputFotos.files)
+
   e.target.reset()
   if (pinAtual) { mapPicker.removeLayer(pinAtual); pinAtual = null }
   mostrarMsg('Farmácia cadastrada com sucesso!')
@@ -176,6 +182,15 @@ function abrirModalFarmacia(f) {
   document.getElementById('edit-endereco').value = f.endereco || ''
   document.getElementById('edit-lat').value = f.latitude
   document.getElementById('edit-lng').value = f.longitude
+
+  // renderiza fotos actuais
+  const grid = document.getElementById('edit-fotos-grid')
+  grid.innerHTML = (f.fotos || []).map(url => `
+    <div style="position:relative;display:inline-block">
+      <img src="${url}" style="width:80px;height:60px;object-fit:cover;border-radius:4px">
+      <button onclick="removerFotoAdmin(${f.id},'${url}',this.parentElement)" style="position:absolute;top:2px;right:2px;background:#e74c3c;color:white;border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:0.7em;line-height:18px;text-align:center">×</button>
+    </div>`).join('')
+
   document.getElementById('modal-farmacia').classList.add('aberto')
 }
 
@@ -190,10 +205,37 @@ async function salvarEdicaoFarmacia() {
   }
   const res = await fetch(`${API}/farmacias/${id}`, { method: 'PUT', headers, body: JSON.stringify(body) })
   if (!res.ok) return mostrarMsg('Erro ao atualizar.', 'erro')
+
+  // upload de novas fotos se houver
+  const inputFotos = document.getElementById('edit-fotos-input')
+  if (inputFotos.files.length) await enviarFotos(id, inputFotos.files)
+
   fecharModal('modal-farmacia')
   mostrarMsg('Farmácia atualizada!')
   await carregarResumo()
   carregarFarmacias()
+}
+
+async function enviarFotos(id, files) {
+  const formData = new FormData()
+  for (const file of files) formData.append('fotos', file)
+  const res = await fetch(`${API}/farmacias/${id}/fotos`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  })
+  if (!res.ok) mostrarMsg('Erro ao enviar fotos.', 'erro')
+}
+
+async function removerFotoAdmin(id, url, el) {
+  const res = await fetch(`${API}/farmacias/${id}/fotos`, {
+    method: 'DELETE',
+    headers,
+    body: JSON.stringify({ url })
+  })
+  if (!res.ok) return mostrarMsg('Erro ao remover foto.', 'erro')
+  el.remove()
+  mostrarMsg('Foto removida.')
 }
 
 async function verDetalhesFarmacia(id) {
