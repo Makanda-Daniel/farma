@@ -20,7 +20,7 @@ async function buscarFarmacias(req, res) {
   const { nome } = req.params
   const { data, error } = await supabase
     .from('medicamentos')
-    .select('id, nome, descricao, quantidade, farmacias(id, nome, endereco, telefone, latitude, longitude)')
+    .select('id, nome, descricao, quantidade, farmacias(id, nome, endereco, telefone, latitude, longitude, fotos)')
     .ilike('nome', `%${nome}%`)
     .gt('quantidade', 0)
   if (error) return res.status(500).json({ error: error.message })

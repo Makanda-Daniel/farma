@@ -7,6 +7,7 @@
     <script src="https://kit.fontawesome.com/54fc0ed631.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css">
     <title>FarmaOn</title>
     <style>
         header { background:none; margin-top: -600px; }
@@ -112,7 +113,10 @@
             <p id="modal-coords" class="coords"></p>
             <h4><i class="fa-solid fa-pills" style="color:#27ae60"></i> Medicamentos disponíveis</h4>
             <ul id="modal-medicamentos"></ul>
-            <button class="btn-mapa" onclick="irParaMapa()">Ver no Mapa</button>
+            <div style="display:flex;gap:8px;margin-top:10px">
+                <button class="btn-mapa" onclick="irParaMapa()" style="flex:1"><i class="fa-solid fa-map-location-dot"></i> Ver no Mapa</button>
+                <button class="btn-mapa" onclick="tracarRota()" style="flex:1;background:#1f3252"><i class="fa-solid fa-route"></i> Traçar Rota</button>
+            </div>
         </div>
     </div>
 
@@ -149,6 +153,7 @@
     </footer>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/javaS"></script>
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>

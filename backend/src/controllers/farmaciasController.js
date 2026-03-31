@@ -1,7 +1,7 @@
 const supabase = require('../supabase/client')
 
 async function listar(req, res) {
-  const { data, error } = await supabase.from('farmacias').select('*')
+  const { data, error } = await supabase.from('farmacias').select('id, nome, endereco, telefone, latitude, longitude, fotos')
   if (error) return res.status(500).json({ error: error.message })
   res.json(data)
 }
@@ -16,6 +16,15 @@ async function buscarProximas(req, res) {
     raio_metros: parseInt(raio)
   })
   if (error) return res.status(500).json({ error: error.message })
+
+  // busca fotos para cada farmácia retornada
+  if (data && data.length) {
+    const ids = data.map(f => f.id)
+    const { data: comFotos } = await supabase.from('farmacias').select('id, fotos').in('id', ids)
+    const mapaFotos = Object.fromEntries((comFotos || []).map(f => [f.id, f.fotos]))
+    data.forEach(f => { f.fotos = mapaFotos[f.id] || [] })
+  }
+
   res.json(data)
 }
 
