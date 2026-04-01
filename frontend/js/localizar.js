@@ -81,7 +81,8 @@ function desenharRota(latO, lngO, latD, lngD) {
     addWaypoints: false,
     draggableWaypoints: false,
     fitSelectedRoutes: true,
-    show: true,
+    show: window.innerWidth >= 768,
+    collapsible: true,
     lineOptions: {
       styles: [{ color: '#27ae60', weight: 5, opacity: 0.8 }]
     },
@@ -260,6 +261,7 @@ function irParaMapa() {
 
 // ── Geolocalização ────────────────────────────────────────
 document.getElementById('ver').addEventListener('click', () => {
+  if (posicaoUser) return buscarProximas(posicaoUser.lat, posicaoUser.lng)
   if (!navigator.geolocation) return alert('O teu browser não suporta geolocalização.')
   navigator.geolocation.getCurrentPosition(
     pos => buscarProximas(pos.coords.latitude, pos.coords.longitude),
@@ -279,4 +281,18 @@ if (medicamento) {
   buscarPorMedicamento(medicamento)
 } else {
   carregarFarmacias()
+  // rastreia localização em tempo real
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords
+        const primeiraVez = !posicaoUser
+        posicaoUser = { lat, lng }
+        colocarMarcadorUser(lat, lng)
+        if (primeiraVez) map.setView([lat, lng], 14)
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    )
+  }
 }
