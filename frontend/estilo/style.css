@@ -110,14 +110,15 @@ header >  div#menufixo > nav > ul > li > a:hover {
  }
 
  header > div#caixal {
-    margin-left: 26px;
+   
+    margin-left: 15px;
  }
   header > div#caixal >form {
     background-color:var(--fundo);
     box-shadow: 1px 1px 4px gray;
     border-radius: 7px;
     padding: 10px;
-    width: 335px;
+    width: 330px;
   }
  header > div#caixal > form > input {
     width: 100%;
@@ -143,6 +144,14 @@ header >  div#menufixo > nav > ul > li > a:hover {
     border: none;
     border-radius: 5px;
  }
+ header > div#caixal >p#chamada {
+   
+    width: 335px;
+ }
+  header > div#caixal >p#chamada > span.icochamada {
+    margin: 5px;
+  }
+
 
 
 
@@ -152,7 +161,7 @@ header >  div#menufixo > nav > ul > li > a:hover {
 
 main {
     flex: 1;
-    margin-top: 200px;
+    margin-top: 240px;
     
 
 }
@@ -375,6 +384,11 @@ footer  > section.Focaixa > article > div > ul > li  > a:hover{
     footer  > section.Focaixa > article {
     flex-flow: row wrap;
     justify-content: space-around;
+
+}
+
+header {
+    height: 700px;
 
 }
 header >  div#menufixo {
