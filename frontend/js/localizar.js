@@ -11,7 +11,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: 'OpenStreetMap'
 }).addTo(map)
 
-// ícone personalizado para o utilizador
 const iconeUser = L.divIcon({
   html: '<div style="background:#2ecc71;width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 0 6px rgba(0,0,0,0.4)"></div>',
   iconSize: [16, 16],
@@ -98,7 +97,7 @@ function desenharRota(latO, lngO, latD, lngD) {
 // ── Carousel ─────────────────────────────────────────────
 function criarCarousel(fotos, index) {
   if (!fotos || !fotos.length) {
-    return `<p class="ft" style="background-image:url('img/${(index % 3) + 1}.jpeg');background-position:center;background-size:cover;height:200px"></p>`
+    return `<p class="ft" style="background-image:url('../img/${(index % 3) + 1}.jpeg');background-position:center;background-size:cover;height:200px"></p>`
   }
   const id = `carousel-${Date.now()}-${index}`
   const imgs = fotos.map((url, i) =>
@@ -123,43 +122,43 @@ function iniciarCarousel(id, total) {
 
 // ── Carregar farmácias ────────────────────────────────────
 async function carregarFarmacias() {
-  try {
-    const res = await fetch(`${API}/farmacias`)
-    if (!res.ok) throw new Error()
-    const farmacias = await res.json()
-    limparMarcadores()
-    renderizarCards(farmacias)
-    farmacias.forEach(adicionarMarcador)
-  } catch (e) {
+  const { data: farmacias, error } = await db
+    .from('farmacias')
+    .select('id, nome, endereco, telefone, latitude, longitude, fotos')
+
+  if (error) {
     document.getElementById('lista-farmacias').innerHTML =
       '<p style="color:#e74c3c;text-align:center;padding:20px">Erro ao carregar farmácias. Verifica a ligação.</p>'
+    return
   }
+
+  limparMarcadores()
+  renderizarCards(farmacias)
+  farmacias.forEach(adicionarMarcador)
 }
 
 // ── Buscar próximas ───────────────────────────────────────
 async function buscarProximas(lat, lng) {
-  try {
-    posicaoUser = { lat, lng }
-    colocarMarcadorUser(lat, lng)
+  posicaoUser = { lat, lng }
+  colocarMarcadorUser(lat, lng)
 
-    const res = await fetch(`${API}/farmacias/proximas?lat=${lat}&lng=${lng}`)
-    if (!res.ok) throw new Error()
-    const farmacias = await res.json()
+  const { data: farmacias, error } = await db.rpc('farmacias_proximas', {
+    lat,
+    lng,
+    raio_metros: 5000
+  })
 
-    limparMarcadores()
-    // recoloca o marcador do user depois de limpar
-    colocarMarcadorUser(lat, lng)
+  if (error) { alert('Erro ao buscar farmácias próximas.'); return }
 
-    renderizarCards(farmacias)
-    farmacias.forEach(adicionarMarcador)
-    map.setView([lat, lng], 14)
+  limparMarcadores()
+  colocarMarcadorUser(lat, lng)
+  renderizarCards(farmacias || [])
+  ;(farmacias || []).forEach(adicionarMarcador)
+  map.setView([lat, lng], 14)
 
-    if (!farmacias.length) {
-      document.getElementById('lista-farmacias').innerHTML =
-        '<p style="color:#2c3e50;text-align:center;padding:20px">Nenhuma farmácia encontrada na sua área.</p>'
-    }
-  } catch (e) {
-    alert('Erro ao buscar farmácias próximas.')
+  if (!farmacias || !farmacias.length) {
+    document.getElementById('lista-farmacias').innerHTML =
+      '<p style="color:#2c3e50;text-align:center;padding:20px">Nenhuma farmácia encontrada na sua área.</p>'
   }
 }
 
@@ -167,29 +166,31 @@ async function buscarProximas(lat, lng) {
 async function buscarPorMedicamento(nome) {
   document.getElementById('lista-farmacias').innerHTML =
     '<p style="color:#2c3e50;text-align:center;padding:20px">A pesquisar...</p>'
-  try {
-    const res = await fetch(`${API}/medicamentos/buscar/${encodeURIComponent(nome)}`)
-    if (!res.ok) throw new Error()
-    const resultados = await res.json()
 
-    const mapaFarmacias = {}
-    resultados.forEach(r => {
-      if (r.farmacias && r.quantidade > 0) {
-        mapaFarmacias[r.farmacias.id] = r.farmacias
-      }
-    })
-    const farmacias = Object.values(mapaFarmacias)
+  const { data: resultados, error } = await db
+    .from('medicamentos')
+    .select('id, nome, quantidade, farmacias(id, nome, endereco, telefone, latitude, longitude, fotos)')
+    .ilike('nome', `%${nome}%`)
+    .gt('quantidade', 0)
 
-    limparMarcadores()
-    if (posicaoUser) colocarMarcadorUser(posicaoUser.lat, posicaoUser.lng)
-    renderizarCards(farmacias)
-    farmacias.forEach(adicionarMarcador)
-    if (farmacias.length && farmacias[0].latitude) {
-      map.setView([farmacias[0].latitude, farmacias[0].longitude], 13)
-    }
-  } catch (e) {
+  if (error) {
     document.getElementById('lista-farmacias').innerHTML =
       '<p style="color:#e74c3c;text-align:center;padding:20px">Erro ao pesquisar medicamento.</p>'
+    return
+  }
+
+  const mapaFarmacias = {}
+  resultados.forEach(r => {
+    if (r.farmacias) mapaFarmacias[r.farmacias.id] = r.farmacias
+  })
+  const farmacias = Object.values(mapaFarmacias)
+
+  limparMarcadores()
+  if (posicaoUser) colocarMarcadorUser(posicaoUser.lat, posicaoUser.lng)
+  renderizarCards(farmacias)
+  farmacias.forEach(adicionarMarcador)
+  if (farmacias.length && farmacias[0].latitude) {
+    map.setView([farmacias[0].latitude, farmacias[0].longitude], 13)
   }
 }
 
@@ -221,26 +222,22 @@ function renderizarCards(farmacias) {
 }
 
 // ── Ver detalhes ──────────────────────────────────────────
-function verMais(id) {
-  fetch(`${API}/farmacias/${id}`)
-    .then(r => r.json())
-    .then(f => {
-      farmaciaAtual = f
-      document.getElementById('modal-nome').textContent = f.nome
-      document.getElementById('modal-endereco').textContent = f.endereco ? 'Endereço: ' + f.endereco : ''
-      document.getElementById('modal-telefone').textContent = f.telefone ? 'Telefone: ' + f.telefone : ''
-      document.getElementById('modal-coords').textContent = `Lat: ${f.latitude} | Lng: ${f.longitude}`
-      document.getElementById('modal-farmacia').classList.add('aberto')
+async function verMais(id) {
+  const { data: f } = await db.from('farmacias').select('*').eq('id', id).single()
+  if (!f) return
 
-      fetch(`${API}/medicamentos/farmacia/${id}`)
-        .then(r => r.json())
-        .then(meds => {
-          const lista = document.getElementById('modal-medicamentos')
-          lista.innerHTML = meds.length
-            ? meds.map(m => `<li><b>${m.nome}</b> — ${m.quantidade} un.${m.descricao ? ' · ' + m.descricao : ''}</li>`).join('')
-            : '<li>Nenhum medicamento cadastrado</li>'
-        })
-    })
+  farmaciaAtual = f
+  document.getElementById('modal-nome').textContent = f.nome
+  document.getElementById('modal-endereco').textContent = f.endereco ? 'Endereço: ' + f.endereco : ''
+  document.getElementById('modal-telefone').textContent = f.telefone ? 'Telefone: ' + f.telefone : ''
+  document.getElementById('modal-coords').textContent = `Lat: ${f.latitude} | Lng: ${f.longitude}`
+  document.getElementById('modal-farmacia').classList.add('aberto')
+
+  const { data: meds } = await db.from('medicamentos').select('*').eq('farmacia_id', id)
+  const lista = document.getElementById('modal-medicamentos')
+  lista.innerHTML = (meds || []).length
+    ? meds.map(m => `<li><b>${m.nome}</b> — ${m.quantidade} un.${m.descricao ? ' · ' + m.descricao : ''}</li>`).join('')
+    : '<li>Nenhum medicamento cadastrado</li>'
 }
 
 function fecharModal() {
@@ -281,7 +278,6 @@ if (medicamento) {
   buscarPorMedicamento(medicamento)
 } else {
   carregarFarmacias()
-  // rastreia localização em tempo real
   if (navigator.geolocation) {
     navigator.geolocation.watchPosition(
       pos => {

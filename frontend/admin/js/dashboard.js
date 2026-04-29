@@ -1,7 +1,7 @@
-const token = localStorage.getItem('admin_token')
-if (!token) window.location.href = 'index.html'
-
-const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+// ── Auth ─────────────────────────────────────────────────
+db.auth.getSession().then(({ data: { session } }) => {
+  if (!session) window.location.href = 'index.html'
+})
 
 let todasFarmacias = []
 let todosMedicamentos = []
@@ -29,8 +29,7 @@ function trocarSecao(id, btn) {
 }
 
 function sair() {
-  localStorage.removeItem('admin_token')
-  window.location.href = 'index.html'
+  db.auth.signOut().then(() => window.location.href = 'index.html')
 }
 
 function fecharModal(id) {
@@ -38,8 +37,7 @@ function fecharModal(id) {
 }
 
 function filtrarTabela(tbodyId, termo) {
-  const rows = document.querySelectorAll(`#${tbodyId} tr`)
-  rows.forEach(row => {
+  document.querySelectorAll(`#${tbodyId} tr`).forEach(row => {
     row.style.display = row.textContent.toLowerCase().includes(termo.toLowerCase()) ? '' : 'none'
   })
 }
@@ -74,13 +72,13 @@ function atualizarMapaGeral(farmacias) {
 // ── Visão Geral ──────────────────────────────────────────
 
 async function carregarResumo() {
-  const [farmacias, meds] = await Promise.all([
-    fetch(`${API}/farmacias`).then(r => r.json()),
-    fetch(`${API}/medicamentos/farmacia/todos`).then(r => r.json()).catch(() => [])
+  const [{ data: farmacias }, { data: meds }] = await Promise.all([
+    db.from('farmacias').select('id, nome, endereco, telefone, latitude, longitude, fotos'),
+    db.from('medicamentos').select('*')
   ])
 
-  todasFarmacias = Array.isArray(farmacias) ? farmacias : []
-  todosMedicamentos = Array.isArray(meds) ? meds : []
+  todasFarmacias = farmacias || []
+  todosMedicamentos = meds || []
 
   document.getElementById('total-farmacias').textContent = todasFarmacias.length
   document.getElementById('total-medicamentos').textContent = todosMedicamentos.length
@@ -88,13 +86,11 @@ async function carregarResumo() {
 
   atualizarMapaGeral(todasFarmacias)
 
-  // recentes farmácias
   const ulF = document.getElementById('lista-recentes-farmacias')
   ulF.innerHTML = todasFarmacias.length
     ? todasFarmacias.slice(-5).reverse().map(f => `<li>${f.nome}<span>${f.telefone || '—'}</span></li>`).join('')
     : '<li>Nenhuma farmácia cadastrada</li>'
 
-  // recentes medicamentos
   const ulM = document.getElementById('lista-recentes-meds')
   ulM.innerHTML = todosMedicamentos.length
     ? todosMedicamentos.slice(-5).reverse().map(m => {
@@ -107,10 +103,9 @@ async function carregarResumo() {
 // ── Farmácias ────────────────────────────────────────────
 
 async function carregarFarmacias() {
-  const res = await fetch(`${API}/farmacias`)
-  todasFarmacias = await res.json()
+  const { data } = await db.from('farmacias').select('id, nome, endereco, telefone, latitude, longitude, fotos')
+  todasFarmacias = data || []
 
-  // conta medicamentos por farmácia
   const contagem = {}
   todosMedicamentos.forEach(m => { contagem[m.farmacia_id] = (contagem[m.farmacia_id] || 0) + 1 })
 
@@ -151,11 +146,10 @@ document.getElementById('form-farmacia').addEventListener('submit', async (e) =>
     latitude: parseFloat(document.getElementById('f-lat').value),
     longitude: parseFloat(document.getElementById('f-lng').value)
   }
-  const res = await fetch(`${API}/farmacias`, { method: 'POST', headers, body: JSON.stringify(body) })
-  if (!res.ok) return mostrarMsg('Erro ao cadastrar farmácia.', 'erro')
-  const farmacia = await res.json()
 
-  // upload de fotos se houver
+  const { data: farmacia, error } = await db.from('farmacias').insert([body]).select().single()
+  if (error) return mostrarMsg('Erro ao cadastrar farmácia.', 'erro')
+
   const inputFotos = document.getElementById('f-fotos')
   if (inputFotos.files.length) await enviarFotos(farmacia.id, inputFotos.files)
 
@@ -168,8 +162,8 @@ document.getElementById('form-farmacia').addEventListener('submit', async (e) =>
 
 async function removerFarmacia(id) {
   if (!confirm('Remover esta farmácia? Todos os medicamentos vinculados serão removidos.')) return
-  const res = await fetch(`${API}/farmacias/${id}`, { method: 'DELETE', headers })
-  if (!res.ok) return mostrarMsg('Erro ao remover.', 'erro')
+  const { error } = await db.from('farmacias').delete().eq('id', id)
+  if (error) return mostrarMsg('Erro ao remover.', 'erro')
   mostrarMsg('Farmácia removida.')
   await carregarResumo()
   carregarFarmacias()
@@ -183,7 +177,6 @@ function abrirModalFarmacia(f) {
   document.getElementById('edit-lat').value = f.latitude
   document.getElementById('edit-lng').value = f.longitude
 
-  // renderiza fotos actuais
   const grid = document.getElementById('edit-fotos-grid')
   grid.innerHTML = (f.fotos || []).map(url => `
     <div style="position:relative;display:inline-block">
@@ -203,10 +196,10 @@ async function salvarEdicaoFarmacia() {
     latitude: parseFloat(document.getElementById('edit-lat').value),
     longitude: parseFloat(document.getElementById('edit-lng').value)
   }
-  const res = await fetch(`${API}/farmacias/${id}`, { method: 'PUT', headers, body: JSON.stringify(body) })
-  if (!res.ok) return mostrarMsg('Erro ao atualizar.', 'erro')
 
-  // upload de novas fotos se houver
+  const { error } = await db.from('farmacias').update(body).eq('id', id)
+  if (error) return mostrarMsg('Erro ao atualizar.', 'erro')
+
   const inputFotos = document.getElementById('edit-fotos-input')
   if (inputFotos.files.length) await enviarFotos(id, inputFotos.files)
 
@@ -217,23 +210,30 @@ async function salvarEdicaoFarmacia() {
 }
 
 async function enviarFotos(id, files) {
-  const formData = new FormData()
-  for (const file of files) formData.append('fotos', file)
-  const res = await fetch(`${API}/farmacias/${id}/fotos`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: formData
-  })
-  if (!res.ok) mostrarMsg('Erro ao enviar fotos.', 'erro')
+  const urls = []
+  for (const file of files) {
+    const ext = file.name.split('.').pop()
+    const path = `farmacia_${id}_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    const { error } = await db.storage.from('farmacias').upload(path, file, { contentType: file.type })
+    if (error) { mostrarMsg('Erro ao enviar foto.', 'erro'); continue }
+    const { data } = db.storage.from('farmacias').getPublicUrl(path)
+    urls.push(data.publicUrl)
+  }
+
+  const { data: farmacia } = await db.from('farmacias').select('fotos').eq('id', id).single()
+  const todasFotos = [...(farmacia?.fotos || []), ...urls]
+  await db.from('farmacias').update({ fotos: todasFotos }).eq('id', id)
 }
 
 async function removerFotoAdmin(id, url, el) {
-  const res = await fetch(`${API}/farmacias/${id}/fotos`, {
-    method: 'DELETE',
-    headers,
-    body: JSON.stringify({ url })
-  })
-  if (!res.ok) return mostrarMsg('Erro ao remover foto.', 'erro')
+  const match = url.match(/\/storage\/v1\/object\/public\/farmacias\/(.+)$/)
+  const filePath = match ? match[1] : url.split('/').pop()
+  await db.storage.from('farmacias').remove([filePath])
+
+  const { data: farmacia } = await db.from('farmacias').select('fotos').eq('id', id).single()
+  const fotos = (farmacia?.fotos || []).filter(f => f !== url)
+  const { error } = await db.from('farmacias').update({ fotos }).eq('id', id)
+  if (error) return mostrarMsg('Erro ao remover foto.', 'erro')
   el.remove()
   mostrarMsg('Foto removida.')
 }
@@ -248,7 +248,6 @@ async function verDetalhesFarmacia(id) {
   document.getElementById('detalhe-coords').textContent = `${f.latitude}, ${f.longitude}`
   document.getElementById('modal-detalhe').classList.add('aberto')
 
-  // mapa do detalhe
   setTimeout(() => {
     if (mapaDetalhe) { mapaDetalhe.remove(); mapaDetalhe = null }
     mapaDetalhe = L.map('mapa-detalhe').setView([f.latitude, f.longitude], 15)
@@ -256,11 +255,9 @@ async function verDetalhesFarmacia(id) {
     L.marker([f.latitude, f.longitude]).addTo(mapaDetalhe).bindPopup(f.nome).openPopup()
   }, 100)
 
-  // medicamentos da farmácia
-  const res = await fetch(`${API}/medicamentos/farmacia/${id}`)
-  const meds = await res.json()
+  const { data: meds } = await db.from('medicamentos').select('*').eq('farmacia_id', id)
   const tbody = document.getElementById('detalhe-tabela-meds')
-  tbody.innerHTML = meds.length
+  tbody.innerHTML = (meds || []).length
     ? meds.map(m => `
         <tr>
           <td>${m.nome}</td>
@@ -275,16 +272,12 @@ async function verDetalhesFarmacia(id) {
 async function carregarMedicamentos() {
   const filtroFarmacia = document.getElementById('filtro-farmacia-med').value
 
-  let meds
-  if (filtroFarmacia) {
-    const res = await fetch(`${API}/medicamentos/farmacia/${filtroFarmacia}`)
-    meds = await res.json()
-  } else {
-    const res = await fetch(`${API}/medicamentos/farmacia/todos`)
-    meds = await res.json()
-  }
+  let query = db.from('medicamentos').select('*')
+  if (filtroFarmacia) query = query.eq('farmacia_id', filtroFarmacia)
 
-  todosMedicamentos = Array.isArray(meds) ? meds : []
+  const { data: meds } = await query
+  todosMedicamentos = meds || []
+
   const mapaFarmacias = Object.fromEntries(todasFarmacias.map(f => [f.id, f.nome]))
   const tbody = document.getElementById('tabela-medicamentos')
   tbody.innerHTML = ''
@@ -318,8 +311,9 @@ document.getElementById('form-medicamento').addEventListener('submit', async (e)
     quantidade: parseInt(document.getElementById('m-quantidade').value) || 0
   }
   if (!body.farmacia_id) return mostrarMsg('Selecione uma farmácia.', 'erro')
-  const res = await fetch(`${API}/medicamentos`, { method: 'POST', headers, body: JSON.stringify(body) })
-  if (!res.ok) return mostrarMsg('Erro ao cadastrar medicamento.', 'erro')
+
+  const { error } = await db.from('medicamentos').insert([body])
+  if (error) return mostrarMsg('Erro ao cadastrar medicamento.', 'erro')
   e.target.reset()
   mostrarMsg('Medicamento cadastrado!')
   await carregarMedicamentos()
@@ -328,8 +322,8 @@ document.getElementById('form-medicamento').addEventListener('submit', async (e)
 
 async function removerMedicamento(id) {
   if (!confirm('Remover este medicamento?')) return
-  const res = await fetch(`${API}/medicamentos/${id}`, { method: 'DELETE', headers })
-  if (!res.ok) return mostrarMsg('Erro ao remover.', 'erro')
+  const { error } = await db.from('medicamentos').delete().eq('id', id)
+  if (error) return mostrarMsg('Erro ao remover.', 'erro')
   mostrarMsg('Medicamento removido.')
   await carregarMedicamentos()
   carregarResumo()
@@ -350,8 +344,8 @@ async function salvarEdicaoMed() {
     descricao: document.getElementById('edit-med-descricao').value,
     quantidade: parseInt(document.getElementById('edit-med-quantidade').value) || 0
   }
-  const res = await fetch(`${API}/medicamentos/${id}`, { method: 'PUT', headers, body: JSON.stringify(body) })
-  if (!res.ok) return mostrarMsg('Erro ao atualizar.', 'erro')
+  const { error } = await db.from('medicamentos').update(body).eq('id', id)
+  if (error) return mostrarMsg('Erro ao atualizar.', 'erro')
   fecharModal('modal-med')
   mostrarMsg('Medicamento atualizado!')
   carregarMedicamentos()

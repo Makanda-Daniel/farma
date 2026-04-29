@@ -60,10 +60,12 @@
     <i class="fa-solid fa-shield-halved fa-2xl" style="color:#2c3e50"></i>
     <h1>Painel Admin</h1>
     <p>FarmaOn — Acesso restrito</p>
-    <input type="password" id="senha" placeholder="Digite a senha">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="senha" placeholder="Senha">
     <button onclick="entrar()">ENTRAR</button>
     <p id="erro">Senha incorreta. Tente novamente.</p>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="js/login.js"></script>
 </body>

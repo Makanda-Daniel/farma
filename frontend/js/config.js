@@ -1,4 +1,3 @@
-const isLocal = ['localhost', '127.0.0.1', ''].includes(window.location.hostname)
-const API = isLocal
-  ? 'http://localhost:3000/api'
-  : '/api'
+const SUPABASE_URL = 'https://arqiyfvhgrtdntqosjip.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycWl5ZnZoZ3J0ZG50cW9zamlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MTcyNjksImV4cCI6MjA5MDA5MzI2OX0.MyVQ4s4kwh65A4n7ZQ8RoTiHLukw7atwf21VcgN3EIQ'
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)

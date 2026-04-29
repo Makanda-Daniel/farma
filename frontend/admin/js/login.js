@@ -1,22 +1,16 @@
-
 async function entrar() {
+  const email = document.getElementById('email').value
   const senha = document.getElementById('senha').value
   const erro = document.getElementById('erro')
   erro.style.display = 'none'
 
-  const res = await fetch(`${API}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ senha })
-  })
+  const { error } = await db.auth.signInWithPassword({ email, password: senha })
 
-  if (!res.ok) {
+  if (error) {
     erro.style.display = 'block'
     return
   }
 
-  const { token } = await res.json()
-  localStorage.setItem('admin_token', token)
   window.location.href = 'dashboard.html'
 }
 
