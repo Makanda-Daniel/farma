@@ -253,7 +253,7 @@ main >section#container>article>div.itens>div>h2,p {
 
 main >section#sessaoEscolhe {
     height: 400px;
-    background-image: linear-gradient( to right,rgba(46, 204, 112, 0.815),rgba(44, 62, 80, 0.905) );
+    background-image: linear-gradient( to top,rgba(46, 204, 112, 0.815),rgba(44, 62, 80, 0.905) );
     margin-top: 160px;
     margin-bottom: 160px;
 
@@ -340,6 +340,7 @@ footer {
 footer > div {
     font-size: 1.1em;
     text-align: center;
+    color: var(--primeira);
   
 }
 footer  > section.Focaixa >  div {
@@ -362,7 +363,7 @@ footer  > section.Focaixa > article > div {
   
 }
 footer  > section.Focaixa > article > div > h2 {
-    color: var(--fundo);
+    color: var(--primeira);
   
 }
 footer  > section.Focaixa > article > div > ul > li {
@@ -373,10 +374,12 @@ footer  > section.Focaixa > article > div > ul > li {
 }
 
 footer  > section.Focaixa > article > div > ul > li  > a {
-    color: gray;
+    color:gray;
+    text-transform: capitalize;
+    text-decoration: none;
 }
 footer  > section.Focaixa > article > div > ul > li  > a:hover{
-    color: var(--primeira);
+    color: var(--fundo);
 }
 
 
